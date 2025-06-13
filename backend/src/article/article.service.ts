@@ -54,7 +54,13 @@ export class ArticleService {
   async update(id: number, updateArticleDto: UpdateArticleDto, userId: number, userRole: string) {
     const article = await this.prisma.article.findUnique({ where: { id } });
     if (!article) throw new NotFoundException('Article not found');
-    if (article.authorId !== userId && userRole !== 'admin') {
+    if (userRole === 'admin') {
+      // Admin can update any article
+    } else if (userRole === 'editor') {
+      if (article.authorId !== userId) {
+        throw new ForbiddenException('Editors can only update their own articles');
+      }
+    } else {
       throw new ForbiddenException('You do not have permission to update this article');
     }
     if (!updateArticleDto || Object.keys(updateArticleDto).length === 0) {
@@ -69,7 +75,13 @@ export class ArticleService {
   async remove(id: number, userId: number, userRole: string) {
     const article = await this.prisma.article.findUnique({ where: { id } });
     if (!article) throw new NotFoundException('Article not found');
-    if (article.authorId !== userId && userRole !== 'admin') {
+    if (userRole === 'admin') {
+      // Admin can delete any article
+    } else if (userRole === 'editor') {
+      if (article.authorId !== userId) {
+        throw new ForbiddenException('Editors can only delete their own articles');
+      }
+    } else {
       throw new ForbiddenException('You do not have permission to delete this article');
     }
     return this.prisma.article.delete({ where: { id } });

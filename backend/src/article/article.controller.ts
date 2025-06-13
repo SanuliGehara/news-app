@@ -23,14 +23,16 @@ export class ArticleController {
     return this.articleService.findOne(Number(id));
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'editor')
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async create(@Body() createArticleDto: CreateArticleDto, @Request() req: any) {
     return this.articleService.create(createArticleDto, req.user.userId);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'editor')
   @Patch(':id')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async update(@Param('id') id: string, @Body() updateArticleDto: UpdateArticleDto, @Request() req: any) {

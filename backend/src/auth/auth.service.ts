@@ -14,6 +14,7 @@ export class AuthService {
   ) {}
 
   private async verifyCaptcha(token: string): Promise<boolean> {
+    if (process.env.NODE_ENV === 'development') return true; // Bypass in dev
     const secret = process.env.RECAPTCHA_SECRET_KEY;
     try {
       const response = await axios.post(
