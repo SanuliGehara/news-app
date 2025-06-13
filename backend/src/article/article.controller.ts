@@ -13,7 +13,8 @@ export class ArticleController {
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Request() req: any) {
-    return this.articleService.findAll();
+    const { sortBy, category } = req.query;
+    return this.articleService.findAll(sortBy, category);
   }
 
   @UseGuards(JwtAuthGuard)

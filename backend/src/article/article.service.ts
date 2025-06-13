@@ -17,10 +17,28 @@ export class ArticleService {
     });
   }
 
-  async findAll() {
+  async findAll(sortBy: string = 'date', category?: string) {
+    let orderBy;
+    switch (sortBy) {
+      case 'views':
+        orderBy = { views: 'desc' as const };
+        break;
+      case 'likes':
+        orderBy = { likes: 'desc' as const };
+        break;
+      case 'category':
+        orderBy = { category: 'asc' as const };
+        break;
+      case 'date':
+      default:
+        orderBy = { publishedAt: 'desc' as const };
+        break;
+    }
+    const where = category ? { category } : undefined;
     return this.prisma.article.findMany({
+      where,
       include: { author: true },
-      orderBy: { publishedAt: 'desc' },
+      orderBy,
     });
   }
 
