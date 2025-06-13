@@ -1,4 +1,5 @@
 import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import axios from 'axios';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -12,8 +13,25 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private async verifyCaptcha(token: string): Promise<boolean> {
+    const secret = process.env.RECAPTCHA_SECRET_KEY;
+    try {
+      const response = await axios.post(
+        `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`
+      );
+      return response.data.success;
+    } catch {
+      return false;
+    }
+  }
+
   async register(data: RegisterDto) {
     // Check if user already exists
+    const captchaValid = await this.verifyCaptcha(data.captcha);
+    if (!captchaValid) {
+      throw new UnauthorizedException('Captcha verification failed');
+    }
+
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -23,6 +41,8 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 10);
     // Create user
+    // Remove captcha from data before user creation
+    const { captcha, ...rest } = data;
     const user = await this.prisma.user.create({
       data: {
         email: data.email,
@@ -42,17 +62,20 @@ export class AuthService {
   }
 
   async login(data: LoginDto) {
-    // Find user by email
-    const user = await this.prisma.user.findUnique({ where: { email: data.email } });
+    const captchaValid = await this.verifyCaptcha(data.captcha);
+    if (!captchaValid) {
+      throw new UnauthorizedException('Captcha verification failed');
+    }
+    // Remove captcha from data before using for login
+    const { captcha, ...rest } = data;
+    const user = await this.prisma.user.findUnique({ where: { email: rest.email } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    // Compare password
-    const isPasswordValid = await bcrypt.compare(data.password, user.password);
+    const isPasswordValid = await bcrypt.compare(rest.password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    // Generate JWT
     const payload = { sub: user.id, email: user.email, role: user.role };
     const token = await this.jwtService.signAsync(payload);
     return {
