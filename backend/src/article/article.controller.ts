@@ -42,4 +42,16 @@ export class ArticleController {
   async remove(@Param('id') id: string, @Request() req: any) {
     return this.articleService.remove(Number(id), req.user.userId, req.user.role);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/like')
+  async like(@Param('id') id: string, @Request() req: any) {
+    return this.articleService.incrementLike(Number(id), req.user.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/view')
+  async view(@Param('id') id: string) {
+    return this.articleService.incrementView(Number(id));
+  }
 }

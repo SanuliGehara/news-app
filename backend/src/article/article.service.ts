@@ -56,4 +56,32 @@ export class ArticleService {
     }
     return this.prisma.article.delete({ where: { id } });
   }
+
+  async incrementLike(id: number, userId: number) {
+    const article = await this.prisma.article.findUnique({ where: { id } });
+    if (!article) throw new NotFoundException('Article not found');
+    const alreadyLiked = await this.prisma.likedArticle.findUnique({
+      where: { userId_articleId: { userId, articleId: id } },
+    });
+    if (alreadyLiked) {
+      throw new BadRequestException('You have already liked this article');
+    }
+    await this.prisma.likedArticle.create({
+      data: { userId, articleId: id },
+    });
+    return this.prisma.article.update({
+      where: { id },
+      data: { likes: { increment: 1 } },
+    });
+  }
+
+  async incrementView(id: number) {
+    const article = await this.prisma.article.findUnique({ where: { id } });
+    if (!article) throw new NotFoundException('Article not found');
+    return this.prisma.article.update({
+      where: { id },
+      data: { views: { increment: 1 } },
+    });
+  }
 }
+
