@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import RequireAuth from "../../../components/RequireAuth";
 import { getAuthHeaders } from "../../../utils/api";
-import { AiOutlineEye, AiOutlineHeart, AiFillHeart } from "react-icons/ai";
+import { AiOutlineEye, AiOutlineHeart, AiFillHeart, AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 
 interface Article {
   id: number;
   title: string;
   content: string;
   author: { name: string };
-  createdAt: string;
+  publishedAt : string;
   views: number;
   likes: number;
   tags?: string[];
@@ -112,12 +112,43 @@ export default function ArticleDetailPage() {
                   ))}
                 </div>
               )}
-              {/* Title */}
-              <h1 className="text-3xl font-bold text-maroon mb-3">{article.title}</h1>
+              {/* Edit/Delete Icons */}
+              <div className="flex justify-between items-center mb-2">
+                <h1 className="text-3xl font-bold text-maroon">{article.title}</h1>
+                <div className="flex gap-3">
+                  <button
+                    className="p-2 rounded hover:bg-gray-100 text-maroon"
+                    title="Edit Article"
+                    onClick={() => router.push(`/articles/edit/${article.id}`)}
+                  >
+                    <AiOutlineEdit className="text-2xl" />
+                  </button>
+                  <button
+                    className="p-2 rounded hover:bg-gray-100 text-maroon"
+                    title="Delete Article"
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to delete this article?')) {
+                        try {
+                          const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
+                            method: 'DELETE',
+                            headers: getAuthHeaders(),
+                          });
+                          if (!res.ok) throw new Error('Failed to delete article');
+                          router.push('/articles');
+                        } catch (err) {
+                          alert('Failed to delete article');
+                        }
+                      }
+                    }}
+                  >
+                    <AiOutlineDelete className="text-2xl" />
+                  </button>
+                </div>
+              </div>
               {/* Author, Date, Views, Likes */}
               <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-6 items-center">
                 <span>By {article.author?.name || "Unknown"}</span>
-                <span>{new Date(article.createdAt).toLocaleString()}</span>
+                <span>{new Date(article.publishedAt).toLocaleString()}</span>
                 <span className="flex items-center gap-1">
                   <AiOutlineEye className="text-xl text-maroon" /> {article.views} views
                 </span>

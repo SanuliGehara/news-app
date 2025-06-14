@@ -2,13 +2,15 @@
 import React, { useEffect, useState } from "react";
 import RequireAuth from "../../components/RequireAuth";
 import ArticleCard from "../../components/ArticleCard";
+import { AiOutlinePlusCircle } from "react-icons/ai";
+import { useRouter } from "next/navigation";
 
 interface Article {
   id: number;
   title: string;
   content: string;
   author: { name: string };
-  createdAt: string;
+  publishedAt: string;
   views: number;
   likes: number;
 }
@@ -17,6 +19,7 @@ export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     const headers = require('../../utils/api').getAuthHeaders();
@@ -70,7 +73,7 @@ export default function ArticlesPage() {
           </div>
         </div>
         {/* Pagination controls (UI only) */}
-        <div className="flex justify-center items-center gap-4 mt-10 mb-8">
+        {/* <div className="flex justify-center items-center gap-4 mt-10 mb-8">
           <button className="flex items-center gap-1 text-gray-500 hover:text-maroon disabled:opacity-50" disabled>
             <span className="material-icons">chevron_left</span> Previous
           </button>
@@ -78,8 +81,17 @@ export default function ArticlesPage() {
           <button className="flex items-center gap-1 text-gray-500 hover:text-maroon">
             Next <span className="material-icons">chevron_right</span>
           </button>
-        </div>
+        </div> */}
       </div>
+      {/* Floating Plus Button */}
+      <button
+        className="fixed bottom-8 right-8 bg-maroon text-white rounded-lg shadow-lg p-4 hover:bg-maroon/90 focus:outline-none z-50"
+        title="Create New Article"
+        onClick={() => router.push('/articles/create')}
+        style={{ boxShadow: '0 4px 16px rgba(142,22,22,0.2)' }}
+      >
+        <AiOutlinePlusCircle className="text-4xl" />
+      </button>
     </RequireAuth>
   );
 }

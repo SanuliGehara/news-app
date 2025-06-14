@@ -8,7 +8,7 @@ interface ArticleCardProps {
     imageUrl?: string;
     tags?: string[];
     author: { name: string };
-    createdAt: string;
+    publishedAt: string;
     views: number;
     likes: number;
   };
@@ -37,8 +37,8 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       )}
       {/* Date */}
       <div className="px-4 pt-2">
-        <span className="bg-maroon text-white text-xs rounded px-2 py-0.5">
-          {new Date(article.createdAt).toLocaleString()}
+        <span className="bg-gray-200 text-gray-700 text-xs rounded px-2 py-0.5">
+          {new Date(article.publishedAt).toLocaleString()}
         </span>
       </div>
       {/* Title */}
