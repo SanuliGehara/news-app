@@ -10,6 +10,7 @@ interface Article {
   title: string;
   content: string;
   author: { name: string };
+  authorId: number;
   publishedAt : string;
   views: number;
   likes: number;
@@ -17,15 +18,21 @@ interface Article {
   imageUrl?: string;
 }
 
+import { useAuth } from "../../../components/AuthProvider";
+
 export default function ArticleDetailPage() {
   const { id } = useParams();
   const router = useRouter();
+  const auth = useAuth() as any; 
+  const { user } = auth;
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [articleError, setArticleError] = useState(""); // For article fetch/display errors
   const [likeError, setLikeError] = useState(""); // For like errors only
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   // Helper: localStorage key for liked state
   const likedKey = id ? `liked_article_${id}` : null;
@@ -116,33 +123,56 @@ export default function ArticleDetailPage() {
               <div className="flex justify-between items-center mb-2">
                 <h1 className="text-3xl font-bold text-maroon">{article.title}</h1>
                 <div className="flex gap-3">
-                  <button
-                    className="p-2 rounded hover:bg-gray-100 text-maroon"
-                    title="Edit Article"
-                    onClick={() => router.push(`/articles/edit/${article.id}`)}
-                  >
-                    <AiOutlineEdit className="text-2xl" />
-                  </button>
-                  <button
-                    className="p-2 rounded hover:bg-gray-100 text-maroon"
-                    title="Delete Article"
-                    onClick={async () => {
-                      if (window.confirm('Are you sure you want to delete this article?')) {
-                        try {
-                          const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
-                            method: 'DELETE',
-                            headers: getAuthHeaders(),
-                          });
-                          if (!res.ok) throw new Error('Failed to delete article');
-                          router.push('/articles');
-                        } catch (err) {
-                          alert('Failed to delete article');
+                  {/* Edit: Admins can edit any article, editors only their own */}
+                  {(user?.role === "admin" || (user?.role === "editor" && user?.id == article.authorId)) && (
+                    <button
+                      className="p-2 rounded hover:bg-gray-100 text-maroon"
+                      title="Edit Article"
+                      onClick={() => router.push(`/articles/edit/${article.id}`)}
+                      disabled={deleteLoading}
+                    >
+                      <AiOutlineEdit className="text-2xl" />
+                    </button>
+                  )}
+                  {/* Delete only for admins */}
+                  {user?.role === "admin" && (
+                    <button
+                      className="p-2 rounded hover:bg-gray-100 text-maroon disabled:opacity-50"
+                      title="Delete Article"
+                      onClick={async () => {
+                        if (window.confirm('Are you sure you want to delete this article?')) {
+                          setDeleteLoading(true);
+                          setDeleteError("");
+                          try {
+                            const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
+                              method: 'DELETE',
+                              headers: getAuthHeaders(),
+                            });
+                            if (!res.ok) {
+                              const data = await res.json().catch(() => ({}));
+                              setDeleteError(data?.message || 'Failed to delete article');
+                              setDeleteLoading(false);
+                              return;
+                            }
+                            router.push('/articles');
+                          } catch (err: any) {
+                            setDeleteError(err.message || 'Failed to delete article');
+                            setDeleteLoading(false);
+                          }
                         }
-                      }
-                    }}
-                  >
-                    <AiOutlineDelete className="text-2xl" />
-                  </button>
+                      }}
+                      disabled={deleteLoading}
+                    >
+                      {deleteLoading ? (
+                        <span className="w-5 h-5 inline-block animate-spin border-2 border-maroon border-t-transparent rounded-full"></span>
+                      ) : (
+                        <AiOutlineDelete className="text-2xl" />
+                      )}
+                    </button>
+                  )}
+                  {deleteError && (
+                    <div className="text-red-600 text-xs mt-2">{deleteError}</div>
+                  )}
                 </div>
               </div>
               {/* Author, Date, Views, Likes */}

@@ -7,10 +7,8 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white p-8 rounded shadow text-center">
-          <p className="text-maroon font-semibold text-lg">Loading...</p>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-maroon font-semibold text-lg">Loading...</p>
       </div>
     );
   }
@@ -20,10 +18,8 @@ export default function RequireAuth({ children }: { children: React.ReactNode })
       window.location.href = "/login";
     }
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-white p-8 rounded shadow text-center">
-          <p className="text-maroon font-semibold text-lg">You must be logged in to view this page.</p>
-        </div>
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-maroon font-semibold text-lg">You must be logged in to view this page.</p>
       </div>
     );
   }

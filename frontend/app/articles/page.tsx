@@ -15,6 +15,8 @@ interface Article {
   likes: number;
 }
 
+import { useAuth } from "../../components/AuthProvider";
+
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,26 +74,26 @@ export default function ArticlesPage() {
             )}
           </div>
         </div>
-        {/* Pagination controls (UI only) */}
-        {/* <div className="flex justify-center items-center gap-4 mt-10 mb-8">
-          <button className="flex items-center gap-1 text-gray-500 hover:text-maroon disabled:opacity-50" disabled>
-            <span className="material-icons">chevron_left</span> Previous
-          </button>
-          <span className="bg-maroon text-white rounded px-3 py-1 font-semibold">1</span>
-          <button className="flex items-center gap-1 text-gray-500 hover:text-maroon">
-            Next <span className="material-icons">chevron_right</span>
-          </button>
-        </div> */}
       </div>
-      {/* Floating Plus Button */}
-      <button
-        className="fixed bottom-8 right-8 bg-maroon text-white rounded-lg shadow-lg p-4 hover:bg-maroon/90 focus:outline-none z-50"
-        title="Create New Article"
-        onClick={() => router.push('/articles/create')}
-        style={{ boxShadow: '0 4px 16px rgba(142,22,22,0.2)' }}
-      >
-        <AiOutlinePlusCircle className="text-4xl" />
-      </button>
+      {/* Floating Plus Button (only for admin/editor) */}
+      {(() => {
+        const auth = useAuth();
+        const role = auth?.user?.role;
+        if (role === "admin" || role === "editor") {
+          return (
+            <button
+              className="fixed bottom-8 right-8 bg-maroon text-white rounded-lg shadow-lg p-4 hover:bg-maroon/90 focus:outline-none z-50"
+              title="Create New Article"
+              onClick={() => router.push('/articles/create')}
+              style={{ boxShadow: '0 4px 16px rgba(142,22,22,0.2)' }}
+            >
+              <AiOutlinePlusCircle className="text-4xl" />
+            </button>
+          );
+        }
+        return null;
+      })()}
+
     </RequireAuth>
   );
 }

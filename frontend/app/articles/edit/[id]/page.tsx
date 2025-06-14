@@ -3,6 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getAuthHeaders } from "../../../../utils/api";
 
+import RequireAuth from "../../../../components/RequireAuth";
+
 const EditArticlePage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -115,4 +117,14 @@ const EditArticlePage = () => {
   );
 };
 
-export default EditArticlePage;
+export default function ProtectedEditArticlePage() {
+  return (
+    <RequireAuth>
+      <EditArticlePage />
+    </RequireAuth>
+  );
+}
+
+// Export the original for testing or advanced use
+export { EditArticlePage };
+

@@ -25,7 +25,6 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password, captcha }),
       });
       const data = await res.json();
-      console.log('Login response:', data);
       if (!res.ok) throw new Error(data.message || "Login failed");
       setSuccess(true);
       if (data.access_token) {

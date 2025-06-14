@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthHeaders } from "../../../utils/api";
 
+import RequireAuth from "../../../components/RequireAuth";
+
 const CreateArticlePage = () => {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -90,4 +92,14 @@ const CreateArticlePage = () => {
   );
 };
 
-export default CreateArticlePage;
+export default function ProtectedCreateArticlePage() {
+  return (
+    <RequireAuth>
+      <CreateArticlePage />
+    </RequireAuth>
+  );
+}
+
+// Export the original for testing or advanced use
+export { CreateArticlePage };
+
