@@ -28,7 +28,16 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
       setSuccess(true);
-      // Optionally redirect or clear form
+      // Clear form and redirect to login page
+      setEmail("");
+      setPassword("");
+      setName("");
+      setCaptcha("");
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -48,7 +57,7 @@ export default function RegisterPage() {
           <label className="block text-maroon mb-2">Name</label>
           <input
             type="text"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
             value={name}
             onChange={e => setName(e.target.value)}
             required
@@ -58,7 +67,7 @@ export default function RegisterPage() {
           <label className="block text-maroon mb-2">Email</label>
           <input
             type="email"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
@@ -68,7 +77,7 @@ export default function RegisterPage() {
           <label className="block text-maroon mb-2">Password</label>
           <input
             type="password"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required

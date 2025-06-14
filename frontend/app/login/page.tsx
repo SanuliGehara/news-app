@@ -30,6 +30,11 @@ export default function LoginPage() {
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
       }
+      // Clear form
+      setEmail("");
+      setPassword("");
+      setCaptcha("");
+      
       // Redirect after 1 second
       setTimeout(() => {
         window.location.href = "/articles";
@@ -52,7 +57,7 @@ export default function LoginPage() {
           <label className="block text-maroon mb-2">Email</label>
           <input
             type="email"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
@@ -63,7 +68,7 @@ export default function LoginPage() {
           <label className="block text-maroon mb-2">Password</label>
           <input
             type="password"
-            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-maroon"
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
