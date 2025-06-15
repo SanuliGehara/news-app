@@ -4,6 +4,9 @@ import RequireAuth from "../../components/RequireAuth";
 import ArticleCard from "../../components/ArticleCard";
 import { AiOutlinePlusCircle } from "react-icons/ai";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../components/AuthProvider";
+import SidebarFilter from "./SidebarFilter";
+import NavBar from "@/components/NavBar";
 
 interface Article {
   id: number;
@@ -14,8 +17,6 @@ interface Article {
   views: number;
   likes: number;
 }
-
-import { useAuth } from "../../components/AuthProvider";
 
 const CATEGORIES = [
   { label: "All", value: "" },
@@ -31,13 +32,12 @@ const SORT_OPTIONS = [
   { label: "Most Liked", value: "likes" },
 ];
 
-import UserNavInfo from "./UserNavInfo";
-import SidebarFilter from "./SidebarFilter";
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const [category, setCategory] = useState("");
   const [sortBy, setSortBy] = useState("date");
   const [visibleArticlesCount, setVisibleArticlesCount] = useState(6);
@@ -64,7 +64,10 @@ export default function ArticlesPage() {
         return res.json();
       })
       .then(data => setArticles(data))
-      .catch(err => setError(err.message))
+      .catch(err => {
+        setError(err.message);
+        setShowModal(true);
+      })
       .finally(() => setLoading(false));
   }, [category, sortBy]);
 
@@ -72,14 +75,7 @@ export default function ArticlesPage() {
     <RequireAuth>
       <div className="min-h-screen bg-gray-50 flex flex-col">
         {/* Navbar */}
-        <nav className="w-full bg-maroon shadow-lg py-4 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-extrabold text-white tracking-wide">Ada Derana</span>
-            <span className="ml-2 text-base text-white/80 hidden sm:inline">News Portal</span>
-          </div>
-          {/* User info and logout */}
-          <UserNavInfo />
-        </nav>
+        <NavBar />
         {/* Main content with sidebar filter and articles grid */}
         <div className="flex flex-col sm:flex-row max-w-7xl mx-auto w-full px-2 gap-6 mt-8 mb-8">
           <SidebarFilter
@@ -92,7 +88,21 @@ export default function ArticlesPage() {
           />
           <div className="w-full">
             {loading && <div className="text-maroon text-center py-10">Loading articles...</div>}
-            {error && <div className="text-red-600 text-center py-10">{error}</div>}
+            {/* Modal for error */}
+            {showModal && error && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center max-w-xs w-full">
+                  <span className="text-red-600 font-bold">{error}</span>
+                  <button
+                    className="mt-4 px-4 py-2 bg-maroon text-white rounded hover:bg-maroon/90 transition"
+                    onClick={() => setShowModal(false)}
+                    autoFocus
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {articles.slice(0, visibleArticlesCount).map(article => (
                 <ArticleCard key={article.id} article={article} />

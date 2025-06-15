@@ -1,6 +1,10 @@
 import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateArticleDto {
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @IsString()
   @IsNotEmpty()
   title: string;

@@ -42,6 +42,7 @@ model Article {
   authorId    Int
   author      User     @relation(fields: [authorId], references: [id])
   likedBy     LikedArticle[]
+  imageUrl    String?
 }
 
 model LikedArticle {

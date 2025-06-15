@@ -19,6 +19,7 @@ interface Article {
 }
 
 import { useAuth } from "../../../components/AuthProvider";
+import NavBar from "../../../components/NavBar";
 
 export default function ArticleDetailPage() {
   const { id } = useParams();
@@ -33,6 +34,7 @@ export default function ArticleDetailPage() {
   const [likeCount, setLikeCount] = useState(0);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Helper: localStorage key for liked state
   const likedKey = id ? `liked_article_${id}` : null;
@@ -95,30 +97,21 @@ export default function ArticleDetailPage() {
 
   return (
     <RequireAuth>
+      {/* Navbar */}
+      <NavBar />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center p-8">
-        <div className="w-full max-w-2xl bg-white rounded-xl shadow p-8 border-t-8 border-maroon">
+        <div className="w-full max-w-3xl bg-white rounded-xl shadow p-8 border-t-8 border-maroon">
+          {article && article.imageUrl && (
+            <img
+              src={article.imageUrl}
+              alt={article.title}
+              className="w-full max-h-80 object-contain rounded mb-6 border"
+            />
+          )}
           {loading && <div className="text-maroon text-center py-10">Loading article...</div>}
           {articleError && <div className="text-red-600 text-center py-10">{articleError}</div>}
           {article && (
             <>
-              {/* Image placeholder */}
-              <div className="h-64 bg-gray-100 flex items-center justify-center mb-6 rounded-md">
-                {article.imageUrl ? (
-                  <img src={article.imageUrl} alt={article.title} className="object-cover w-full h-full rounded-md" />
-                ) : (
-                  <div className="text-gray-400 text-6xl">
-                    <span className="material-icons">image</span>
-                  </div>
-                )}
-              </div>
-              {/* Tags */}
-              {article.tags && article.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.map(tag => (
-                    <span key={tag} className="bg-gray-200 text-xs rounded px-2 py-0.5 font-medium text-gray-700">{tag}</span>
-                  ))}
-                </div>
-              )}
               {/* Edit/Delete Icons */}
               <div className="flex justify-between items-center mb-2">
                 <h1 className="text-3xl font-bold text-maroon">{article.title}</h1>
@@ -136,39 +129,79 @@ export default function ArticleDetailPage() {
                   )}
                   {/* Delete only for admins */}
                   {user?.role === "admin" && (
-                    <button
-                      className="p-2 rounded hover:bg-gray-100 text-maroon disabled:opacity-50"
-                      title="Delete Article"
-                      onClick={async () => {
-                        if (window.confirm('Are you sure you want to delete this article?')) {
-                          setDeleteLoading(true);
-                          setDeleteError("");
-                          try {
-                            const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
-                              method: 'DELETE',
-                              headers: getAuthHeaders(),
-                            });
-                            if (!res.ok) {
-                              const data = await res.json().catch(() => ({}));
-                              setDeleteError(data?.message || 'Failed to delete article');
-                              setDeleteLoading(false);
-                              return;
-                            }
-                            router.push('/articles');
-                          } catch (err: any) {
-                            setDeleteError(err.message || 'Failed to delete article');
-                            setDeleteLoading(false);
-                          }
-                        }
-                      }}
-                      disabled={deleteLoading}
-                    >
-                      {deleteLoading ? (
-                        <span className="w-5 h-5 inline-block animate-spin border-2 border-maroon border-t-transparent rounded-full"></span>
-                      ) : (
-                        <AiOutlineDelete className="text-2xl" />
-                      )}
-                    </button>
+  <>
+    <button
+      className="p-2 rounded hover:bg-gray-100 text-maroon disabled:opacity-50"
+      title="Delete Article"
+      onClick={() => setShowDeleteModal(true)}
+      disabled={deleteLoading}
+      aria-haspopup="dialog"
+      aria-controls="delete-modal"
+    >
+      {deleteLoading ? (
+        <span className="w-5 h-5 inline-block animate-spin border-2 border-maroon border-t-transparent rounded-full"></span>
+      ) : (
+        <AiOutlineDelete className="text-2xl" />
+      )}
+    </button>
+    {showDeleteModal && (
+      <div
+        id="delete-modal"
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+        onKeyDown={e => { if (e.key === 'Escape') setShowDeleteModal(false); }}
+      >
+        <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-6 relative">
+          <h2 className="text-lg font-bold mb-2 text-maroon">Confirm Deletion</h2>
+          <p className="mb-4 text-gray-700">Are you sure you want to delete this article? This action cannot be undone.</p>
+          {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
+          <div className="flex justify-end gap-2">
+            <button
+              className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition"
+              onClick={() => { setShowDeleteModal(false); setDeleteError(""); }}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition disabled:opacity-50"
+              onClick={async () => {
+                setDeleteLoading(true);
+                setDeleteError("");
+                try {
+                  const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders(),
+                  });
+                  if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    setDeleteError(data?.message || 'Failed to delete article');
+                    setDeleteLoading(false);
+                    return;
+                  }
+                  setShowDeleteModal(false);
+                  router.push('/articles');
+                } catch (err: any) {
+                  setDeleteError(err.message || 'Failed to delete article');
+                  setDeleteLoading(false);
+                }
+              }}
+              disabled={deleteLoading}
+              autoFocus
+            >
+              {deleteLoading ? (
+                <span className="w-5 h-5 inline-block animate-spin border-2 border-white border-t-transparent rounded-full"></span>
+              ) : (
+                "Delete"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
                   )}
                   {deleteError && (
                     <div className="text-red-600 text-xs mt-2">{deleteError}</div>
@@ -203,7 +236,7 @@ export default function ArticleDetailPage() {
                 </span>
               </div>
               {/* Content */}
-              <div className="prose max-w-none text-gray-900 mb-6">
+              <div className="prose max-w-none text-gray-900 mb-6 whitespace-pre-line">
                 {article.content}
               </div>
               {/* Back button */}

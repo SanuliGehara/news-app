@@ -17,15 +17,15 @@ interface ArticleCardProps {
 export default function ArticleCard({ article }: ArticleCardProps) {
   return (
     <div className="flex flex-col bg-white rounded-xl shadow border border-gray-200 overflow-hidden hover:shadow-xl transition group">
-      {/* Image (placeholder if not present) */}
+      {/* Image (with fallback if not present) */}
       <div className="h-48 bg-gray-100 flex items-center justify-center">
-        {article.imageUrl ? (
-          <img src={article.imageUrl} alt={article.title} className="object-cover w-full h-full" />
-        ) : (
-          <div className="text-gray-400 text-6xl">
-            <span className="material-icons">image</span>
-          </div>
-        )}
+        <img
+          src={article.imageUrl && article.imageUrl.match(/^https?:\/\//)
+            ? article.imageUrl
+            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoQpgsoU-jmhI98Vs-qzsr_xi5bkEWNrRQmg&s'}
+          alt={article.title}
+          className="object-cover w-full h-full"
+        />
       </div>
       {/* Tags */}
       {article.tags && article.tags.length > 0 && (

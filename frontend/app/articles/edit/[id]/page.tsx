@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getAuthHeaders } from "../../../../utils/api";
 
 import RequireAuth from "../../../../components/RequireAuth";
+import NavBar from "../../../../components/NavBar";
 
 const EditArticlePage = () => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const EditArticlePage = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("Local");
+  const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState("");
@@ -30,6 +32,7 @@ const EditArticlePage = () => {
         setTitle(data.title || "");
         setContent(data.content || "");
         setCategory(data.category || "Local");
+        setImageUrl(data.imageUrl || "");
       })
       .catch(err => setError(err.message || "Failed to fetch article"))
       .finally(() => setFetching(false));
@@ -51,6 +54,9 @@ const EditArticlePage = () => {
           title,
           content,
           category,
+          imageUrl: imageUrl && imageUrl.match(/^https?:\/\//)
+            ? imageUrl
+            : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoQpgsoU-jmhI98Vs-qzsr_xi5bkEWNrRQmg&s',
         }),
       });
       if (!response.ok) {
@@ -58,7 +64,10 @@ const EditArticlePage = () => {
         throw new Error(data?.message || "Failed to update article");
       }
       setSuccess("Article updated successfully!");
-      setTimeout(() => router.push("/articles"), 1000);
+      setTimeout(() => {
+        setSuccess("");
+        router.push("/articles");
+      }, 1200);
     } catch (err: any) {
       setError(err.message || "Failed to update article");
     } finally {
@@ -71,6 +80,9 @@ const EditArticlePage = () => {
   }
 
   return (
+    <>
+    {/* Navbar */}
+    <NavBar />
     <div className="min-h-screen bg-gray-50 flex flex-col items-center p-8">
       <div className="w-full max-w-2xl bg-white rounded-xl shadow p-8 border-t-8 border-maroon">
         <h1 className="text-2xl font-bold text-maroon mb-6">Edit Article</h1>
@@ -102,18 +114,32 @@ const EditArticlePage = () => {
             <option value="tech">Tech</option>
             <option value="entertainment">Entertainment</option>
           </select>
+          <input
+            className="border rounded px-3 py-2 focus:outline-maroon text-gray-800 placeholder-gray-400 transition"
+            type="url"
+            placeholder="Image URL (optional)"
+            value={imageUrl}
+            onChange={e => setImageUrl(e.target.value)}
+            pattern="https?://.*"
+          />
+          <img
+            src={imageUrl && imageUrl.match(/^https?:\/\//) ? imageUrl : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoQpgsoU-jmhI98Vs-qzsr_xi5bkEWNrRQmg&s'}
+            alt="Preview"
+            className="max-h-48 rounded mb-2 border object-contain"
+            style={{maxWidth: '100%'}}
+          />
           <button
-            type="submit"
             className="bg-maroon text-white font-bold py-2 rounded hover:bg-maroon/90 transition disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Updating..." : "Update Article"}
           </button>
-          {error && <span className="text-red-500 text-sm">{error}</span>}
-          {success && <span className="text-green-600 text-sm">{success}</span>}
+          {error && <p className="text-red-600">{error}</p>}
+          {success && <p className="text-green-600">{success}</p>}
         </form>
       </div>
     </div>
+    </>
   );
 };
 

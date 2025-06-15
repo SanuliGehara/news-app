@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Recaptcha from "../../components/Recaptcha";
+import { Eye, EyeOff } from 'lucide-react'; 
 
 const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
 
@@ -10,14 +11,14 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [captcha, setCaptcha] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<'error' | 'success' | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setSuccess(false);
     try {
       // TODO: Use environment variable for production base URL
       const res = await fetch("http://localhost:4000/auth/register", {
@@ -27,7 +28,9 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
-      setSuccess(true);
+      setModalMessage("Registration successful! Redirecting to login...");
+      setModalType('success');
+      setShowModal(true);
       // Clear form and redirect to login page
       setEmail("");
       setPassword("");
@@ -39,7 +42,9 @@ export default function RegisterPage() {
       }, 1000);
 
     } catch (err: any) {
-      setError(err.message);
+      setModalMessage(err.message || "Registration failed");
+      setModalType('error');
+      setShowModal(true);
     } finally {
       setLoading(false);
     }
@@ -47,6 +52,23 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
+      {/* Modal for error/success */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center max-w-xs w-full">
+            <span className={modalType === 'error' ? "text-red-600 font-bold" : "text-green-600 font-bold"}>
+              {modalMessage}
+            </span>
+            <button
+              className="mt-4 px-4 py-2 bg-maroon text-white rounded hover:bg-maroon/90 transition"
+              onClick={() => setShowModal(false)}
+              autoFocus
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded shadow-md w-full max-w-md border-t-8 border-maroon"
@@ -73,19 +95,24 @@ export default function RegisterPage() {
             required
           />
         </div>
-        <div className="mb-4">
+        <div className="mb-4 relative">
           <label className="block text-maroon mb-2">Password</label>
           <input
-            type="password"
-            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon"
+            type={showPassword ? "text" : "password"}
+            className="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-maroon pr-10"
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
           />
+          <button
+            type="button"
+            className="absolute right-3 top-9 text-gray-600 hover:text-maroon focus:outline-none tabIndex={-1}"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
         <Recaptcha siteKey={siteKey} onChange={setCaptcha} />
-        {error && <div className="text-red-600 mb-2 text-center">{error}</div>}
-        {success && <div className="text-green-700 mb-2 text-center">Registration successful!</div>}
         <button
           type="submit"
           className="w-full bg-maroon text-white py-2 rounded font-semibold hover:bg-primary transition"
