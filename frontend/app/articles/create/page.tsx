@@ -6,7 +6,7 @@ import { getAuthHeaders } from "../../../utils/api";
 import RequireAuth from "../../../components/RequireAuth";
 import NavBar from "../../../components/NavBar";
 
-const CreateArticlePage = () => {
+function CreateArticlePageInner() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -55,7 +55,6 @@ const CreateArticlePage = () => {
 
   return (
     <>
-      {/* Navbar */}
       <NavBar />
       <div className="min-h-screen bg-gray-50 flex flex-col items-center p-8">
         <div className="w-full max-w-2xl bg-white rounded-xl shadow p-8 border-t-8 border-maroon">
@@ -112,17 +111,15 @@ const CreateArticlePage = () => {
             {success && <p className="text-green-600">{success}</p>}
           </form>
         </div>
-    </div>
+      </div>
     </>
-  );
-};
-
-export default function ProtectedCreateArticlePage() {
-  return (
-    <RequireAuth>
-      <CreateArticlePage />
-    </RequireAuth>
   );
 }
 
-
+export default function CreateArticlePage() {
+  return (
+    <RequireAuth>
+      <CreateArticlePageInner />
+    </RequireAuth>
+  );
+}
