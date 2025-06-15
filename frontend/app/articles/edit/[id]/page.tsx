@@ -143,7 +143,7 @@ const EditArticlePage = () => {
   );
 };
 
-export default function ProtectedEditArticlePage() {
+export default function Page() {
   return (
     <RequireAuth>
       <EditArticlePage />
