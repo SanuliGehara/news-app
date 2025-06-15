@@ -15,7 +15,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 // This is the correct structure for Vercel
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // IMPORTANT: Update this for your LIVE frontend URL
@@ -30,6 +30,3 @@ async function bootstrap() {
   await app.init(); 
   return app.getHttpAdapter().getInstance();
 }
-
-// Export the bootstrap function for Vercel's runtime
-export default bootstrap();
