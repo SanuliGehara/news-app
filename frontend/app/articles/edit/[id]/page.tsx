@@ -151,6 +151,4 @@ export default function Page() {
   );
 }
 
-// Export the original for testing or advanced use
-export { EditArticlePage };
 
