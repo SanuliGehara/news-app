@@ -6,7 +6,7 @@ import { getAuthHeaders } from "../../../utils/api";
 import RequireAuth from "../../../components/RequireAuth";
 import NavBar from "../../../components/NavBar";
 
-function CreateArticlePageInner() {
+function CreateArticleForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -116,10 +116,10 @@ function CreateArticlePageInner() {
   );
 }
 
-export default function CreateArticlePage() {
+export default function Page() {
   return (
     <RequireAuth>
-      <CreateArticlePageInner />
+      <CreateArticleForm />
     </RequireAuth>
   );
 }
