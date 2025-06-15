@@ -42,7 +42,7 @@ export default function ArticleDetailPage() {
   const handleLike = async () => {
     if (!id) return;
     try {
-      const response = await fetch(`http://localhost:4000/articles/${id}/like`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${id}/like`, {
         method: "PATCH",
         headers: getAuthHeaders(),
       });
@@ -72,12 +72,12 @@ export default function ArticleDetailPage() {
       setLiked(false);
     }
     // Increment view count
-    fetch(`http://localhost:4000/articles/${id}/view`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${id}/view`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
     // Fetch article
-    fetch(`http://localhost:4000/articles/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`, {
       headers: getAuthHeaders(),
     })
       .then(res => {
@@ -171,7 +171,7 @@ export default function ArticleDetailPage() {
                 setDeleteLoading(true);
                 setDeleteError("");
                 try {
-                  const res = await fetch(`http://localhost:4000/articles/${article.id}`, {
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${article.id}`, {
                     method: 'DELETE',
                     headers: getAuthHeaders(),
                   });

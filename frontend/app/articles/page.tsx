@@ -56,7 +56,7 @@ export default function ArticlesPage() {
     const params = new URLSearchParams();
     if (category) params.append("category", category);
     if (sortBy) params.append("sortBy", sortBy);
-    fetch(`http://localhost:4000/articles?${params.toString()}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles?${params.toString()}`, {
       headers,
     })
       .then(res => {

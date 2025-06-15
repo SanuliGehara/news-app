@@ -22,7 +22,7 @@ const CreateArticlePage = () => {
     setError("");
     setSuccess("");
     try {
-      const response = await fetch("http://localhost:4000/articles", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

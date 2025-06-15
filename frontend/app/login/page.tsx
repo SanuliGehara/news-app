@@ -22,7 +22,7 @@ export default function LoginPage() {
     setSuccess(false);
     try {
       // TODO: Use environment variable for production base URL
-      const res = await fetch("http://localhost:4000/auth/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, captcha }),

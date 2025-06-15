@@ -21,7 +21,7 @@ const EditArticlePage = () => {
   useEffect(() => {
     if (!id) return;
     setFetching(true);
-    fetch(`http://localhost:4000/articles/${id}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`, {
       headers: getAuthHeaders(),
     })
       .then(res => {
@@ -44,7 +44,7 @@ const EditArticlePage = () => {
     setError("");
     setSuccess("");
     try {
-      const response = await fetch(`http://localhost:4000/articles/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/articles/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
