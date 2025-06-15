@@ -17,15 +17,46 @@ interface Article {
 
 import { useAuth } from "../../components/AuthProvider";
 
+const CATEGORIES = [
+  { label: "All", value: "" },
+  { label: "General", value: "general" },
+  { label: "Sports", value: "sports" },
+  { label: "Business", value: "business" },
+  { label: "Tech", value: "tech" },
+  { label: "Entertainment", value: "entertainment" },
+];
+const SORT_OPTIONS = [
+  { label: "Newest", value: "date" },
+  { label: "Most Viewed", value: "views" },
+  { label: "Most Liked", value: "likes" },
+];
+
+import UserNavInfo from "./UserNavInfo";
+import SidebarFilter from "./SidebarFilter";
+
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [category, setCategory] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+  const [visibleArticlesCount, setVisibleArticlesCount] = useState(6);
   const router = useRouter();
 
+  // Reset visibleArticlesCount when filters or articles change
   useEffect(() => {
+    setVisibleArticlesCount(6);
+  }, [category, sortBy, articles]);
+
+  // Fetch articles when category or sort changes
+  useEffect(() => {
+    setLoading(true);
+    setError("");
     const headers = require('../../utils/api').getAuthHeaders();
-    fetch("http://localhost:4000/articles", {
+    const params = new URLSearchParams();
+    if (category) params.append("category", category);
+    if (sortBy) params.append("sortBy", sortBy);
+    fetch(`http://localhost:4000/articles?${params.toString()}`, {
       headers,
     })
       .then(res => {
@@ -35,42 +66,55 @@ export default function ArticlesPage() {
       .then(data => setArticles(data))
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [category, sortBy]);
 
   return (
     <RequireAuth>
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        {/* Maroon gradient header */}
-        <div className="w-full bg-gradient-to-b from-maroon to-maroon/80 py-8 text-center">
-          <h1 className="text-4xl font-extrabold text-white mb-2">Ada Derana - News Articles</h1>
-        </div>
-        {/* Subtitle and tag filter placeholder */}
-        <div className="max-w-5xl mx-auto w-full px-4 -mt-8 mb-8">
-          <div className="bg-white rounded-xl shadow p-6">
-            <h2 className="text-xl font-bold text-maroon mb-2 text-center">Article Filter with Categories Or Tags</h2>
-            <div className="text-gray-600 text-center mb-4">
-              Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-            </div>
-            {/* Tag filter placeholder */}
-            <div className="flex flex-wrap gap-2 justify-center mb-4">
-              <span className="bg-gray-200 rounded px-3 py-1 text-xs font-medium text-gray-700 cursor-pointer">Cloud</span>
-              <span className="bg-gray-200 rounded px-3 py-1 text-xs font-medium text-gray-700 cursor-pointer">Network</span>
-              <span className="bg-gray-200 rounded px-3 py-1 text-xs font-medium text-gray-700 cursor-pointer">Analytics</span>
-              <span className="bg-gray-200 rounded px-3 py-1 text-xs font-medium text-gray-700 cursor-pointer">Medicare</span>
-              <span className="bg-gray-200 rounded px-3 py-1 text-xs font-medium text-gray-700 cursor-pointer">Learning</span>
-            </div>
+        {/* Navbar */}
+        <nav className="w-full bg-maroon shadow-lg py-4 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-extrabold text-white tracking-wide">Ada Derana</span>
+            <span className="ml-2 text-base text-white/80 hidden sm:inline">News Portal</span>
           </div>
-        </div>
-        {/* Articles grid */}
-        <div className="max-w-6xl mx-auto w-full px-4">
-          {loading && <div className="text-maroon text-center py-10">Loading articles...</div>}
-          {error && <div className="text-red-600 text-center py-10">{error}</div>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {articles.map(article => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-            {!loading && articles.length === 0 && (
-              <div className="text-gray-500 text-center col-span-full">No articles found.</div>
+          {/* User info and logout */}
+          <UserNavInfo />
+        </nav>
+        {/* Main content with sidebar filter and articles grid */}
+        <div className="flex flex-col sm:flex-row max-w-7xl mx-auto w-full px-2 gap-6 mt-8 mb-8">
+          <SidebarFilter
+            category={category}
+            setCategory={setCategory}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            categories={CATEGORIES}
+            sortOptions={SORT_OPTIONS}
+          />
+          <div className="w-full">
+            {loading && <div className="text-maroon text-center py-10">Loading articles...</div>}
+            {error && <div className="text-red-600 text-center py-10">{error}</div>}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {articles.slice(0, visibleArticlesCount).map(article => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+              {!loading && articles.length === 0 && (
+                <div className="text-gray-500 text-center col-span-full">No articles found.</div>
+              )}
+            </div>
+            {/* View More button */}
+            {visibleArticlesCount < articles.length && (
+              <div className="flex justify-center mt-6">
+                <button
+                  className="bg-maroon text-white px-6 py-2 rounded shadow hover:bg-maroon/90 font-semibold transition"
+                  onClick={() => setVisibleArticlesCount(
+                    typeof window !== "undefined" && window.innerWidth < 640
+                      ? visibleArticlesCount + 4
+                      : visibleArticlesCount + 6
+                  )}
+                >
+                  View More
+                </button>
+              </div>
             )}
           </div>
         </div>
