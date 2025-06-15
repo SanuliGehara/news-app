@@ -125,6 +125,4 @@ export default function ProtectedCreateArticlePage() {
   );
 }
 
-// Export the original for testing or advanced use
-export { CreateArticlePage };
 
